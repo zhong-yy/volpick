@@ -6,7 +6,7 @@ This repository contains code for downloading waveforms, formatting data into se
 
 
 # Usage
-For model users, only the `Final_models` folder is important. 
+For model users, only the `Final_models` folder is useful. 
 
 [SeisBench](https://github.com/seisbench/seisbench) is required to load and run the models.
 
