@@ -1,4 +1,5 @@
 # Deep-learning-based phase picking for volcano-tectonic and long-period earthquakes
+[![DOI](https://zenodo.org/badge/800909138.svg)](https://zenodo.org/doi/10.5281/zenodo.11199021)
 This repository contains code for downloading waveforms, formatting data into seisbench format, training deep-learning phase pickers on volcanic earthquake waveforms and evaluating model performances.
 
 
