@@ -23,5 +23,5 @@ print(picker.weights_docstring)
 
 
 # Code
-The code here is for downloading and formatting data, training and testing a model. Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
+The code here is for downloading and formatting data, training and testing the model. Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
 
