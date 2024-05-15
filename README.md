@@ -1,0 +1,1 @@
+This repository contains code for downloading waveforms, formatting data into seisbench format, training deep-learning phase pickers on volcanic earthquake waveforms and evaluating model performances.

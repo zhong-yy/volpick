@@ -1,0 +1,38 @@
+__pycache__/
+*.egg-info/
+*.egg
+.pytest_cache
+.ipynb_checkpoints
+Misc/
+
+model_training0/
+model_training_backup/
+*backup/
+
+*.eps
+*.csv
+*.zip
+*.pdf
+*.jpg
+*.csv#
+
+/code_test/
+
+stead_FI.csv
+instance_FI.csv
+NIED_account
+
+tb_logs/
+lightning_logs/
+
+temp_*/
+
+/model_training/*/
+/model_training/plot_waveforms.ipynb
+# /model_training/Test*/
+# /model_training/weights/
+# /model_training/*logs/
+
+.vscode
+
+/test_train/weights
