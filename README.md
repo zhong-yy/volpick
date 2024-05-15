@@ -4,9 +4,16 @@ This repository contains code for downloading waveforms, formatting data into se
 
 
 # Usage
-For model users, only the `Final_models` folder is important. [SeisBench](https://github.com/seisbench/seisbench) is required to load and run the models.
+For model users, only the `Final_models` folder is important. 
+
+[SeisBench](https://github.com/seisbench/seisbench) is required to load and run the models.
 
 See `Final_models/demo.ipynb` for a quick start.
+
+```python
+import seisbench.models as sbm
+picker = sbm.PhaseNet.from_pretrained("volpick")
+```
 
 
 
