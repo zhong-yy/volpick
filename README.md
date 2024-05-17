@@ -37,5 +37,7 @@ print(picker.weights_docstring)
 
 
 
-These scripts and notebooks are not designed as a package for general purposes. They just represents the workflow we used to train and evaluate models on volcano seismicity in the paper. Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
+These scripts and notebooks are not designed as a package for general purposes. They just represent the workflow we used to train and evaluate deep-learning phase picker on volcano seismicity in the paper. 
+
+Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
 
