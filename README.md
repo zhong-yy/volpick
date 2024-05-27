@@ -94,6 +94,6 @@ format
 
 
 
-
+# Acknowledgement
 Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
 
