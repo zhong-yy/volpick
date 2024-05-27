@@ -42,7 +42,7 @@ format
 
 
 
-These scripts and notebooks are not designed as a package for general purposes. They just represent the workflow we used to train and evaluate deep-learning phase picker on volcano seismicity in the paper. Therefore, there are inevitably some quick and dirty code implementations that may not be used directly in other situation.
+These scripts and notebooks are not designed as a package for general purposes. They just represent the workflow we used to train and evaluate deep-learning phase picker on volcano seismicity in the paper. Therefore, there are inevitably some quick and dirty code implementations that may not be used directly in other situations.
 
 Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
 
