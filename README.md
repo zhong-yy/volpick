@@ -14,7 +14,7 @@ If you only care about how to use the model, please see folder `Final_models`, a
 - [ObsPy](https://docs.obspy.org/) for data processing
 - Pandas for saving results
 
-**(2) Loading the model using seisbench**
+**(2) Applying the model to seismic waveforms using seisbench**
 
 The following code shows how to load the model in seisbench:
 ```python
