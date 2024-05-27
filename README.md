@@ -70,7 +70,7 @@ See `Final_models/demo.ipynb` for a simple example.
 
 
 # Python scripts
->Note: If you only want to use the final model, you don't need these python scripts. Please see the *Model Usage* section.
+>Note: If you just want to use the final model, you don't have to look at these python scripts. Please see the *Model Usage* section.
 
 The scripts and notebooks represent the workflow we used to process data, train and evaluate deep-learning phase pickers on volcano seismicity in the paper. The scripts are not designed as a package for general purposes, so there are inevitably some quick and dirty code implementations. 
 
