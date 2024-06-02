@@ -39,7 +39,7 @@ print(
 )
 ```
 
-**(2) Code snippet of picking phase arrivals**
+**(3) Code snippet of picking phase arrivals**
 
 The following code shows how to load the model in seisbench:
 ```python
