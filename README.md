@@ -32,10 +32,10 @@ To load the models in SeisBench, you need to copy them to the model directory of
 ```python
 import seisbench.models as sbm
 print(
-    f"Copy all files in 'volpick/phasenet' to {str(sbm.PhaseNet._pretrained_path('volpick')[0].parent)}"
+    f"Copy all files in 'Final_models/volpick/phasenet' to {str(sbm.PhaseNet._pretrained_path('volpick')[0].parent)}"
 )
 print(
-    f"Copy all files in 'volpick/eqtransformer' to {str(sbm.EQTransformer._pretrained_path('volpick')[0].parent)}"
+    f"Copy all files in 'Final_models/volpick/eqtransformer' to {str(sbm.EQTransformer._pretrained_path('volpick')[0].parent)}"
 )
 ```
 
