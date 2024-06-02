@@ -22,11 +22,22 @@ Final_models
 └── volpick_95train_5val  # models trained on the data splits of 94.5% (training), 5.5% (validation), 0% (testing), with the above test set included into the training set
 ```
 
-Here the models in the `volpick` folder is the models presented in our paper. 
+Here the models in the `volpick` folder is the models presented in our paper.  
 
-Since we had tested the models, we then included the test set (including those along the Nankai trough and the Cascadia subduction zone) into the training set, and the resulting models are in folder `volpick_95train_5val`. It may be risky to use the models in `volpick_95train_5val` because the test set has been moved to the training set. However, we expect that the performances of models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset give a more robust model.
+We also provide alternative models in folder `volpick_95train_5val`. They were trained by incorporating the test set into the training set. Since we had tested the models, it might be helpful to use the testing waveforms (including those along the Nankai trough and the Cascadia subduction zone) for training. It may be risky to use the models in `volpick_95train_5val` because the test set has been "burned". However, we expect that the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset tends to give a more robust model.
 
-If you are not sure which to use, we recommend using `volpick`.
+If you are not sure which to choose, we recommend using `volpick`.
+
+To load the models in SeisBench, you need to copy them to the model directory of SeisBench. The following shows the location of the SeisBench model directory.
+```python
+import seisbench.models as sbm
+print(
+    f"Copy all files in 'volpick/phasenet' to {str(sbm.PhaseNet._pretrained_path('volpick')[0].parent)}"
+)
+print(
+    f"Copy all files in 'volpick/eqtransformer' to {str(sbm.EQTransformer._pretrained_path('volpick')[0].parent)}"
+)
+```
 
 **(2) Applying the model to seismic waveforms using seisbench**
 
