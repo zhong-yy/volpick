@@ -69,7 +69,7 @@ See `Final_models/demo.ipynb` for a simple example.
 
 
 
-# Python scripts
+# 2 Python scripts
 >Note: If you just want to use the final model, you don't have to look at these python scripts. Please see the *Model Usage* section.
 
 The scripts and notebooks represent the workflow we used to process data, train and evaluate deep-learning phase pickers on volcano seismicity in the paper. The scripts are not designed as a package for general purposes, so there are inevitably some quick and dirty code implementations. 
@@ -92,7 +92,7 @@ format
 
 `model_training`: notebooks and scripts that invoke scripts from the volpick folder to train and evaluate models.
 
-
+# Reference
 
 # Acknowledgement
 Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
