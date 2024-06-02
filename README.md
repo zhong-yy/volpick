@@ -39,7 +39,7 @@ print(
 )
 ```
 
-**(2) Applying the model to seismic waveforms using seisbench**
+**(2) Code snippet of picking phase arrivals**
 
 The following code shows how to load the model in seisbench:
 ```python
