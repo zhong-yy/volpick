@@ -6,13 +6,26 @@ This repository contains the final models and the code to reproduce the model (d
 
 
 # 1 Model Usage
-If you only care about how to use the model, please see folder `Final_models`, and you can ignore the python script files in other folders.
+If you only care about how to use the model, please see folder `Final_models`, and you can ignore the python script files in other folders. See `Final_models/demo.ipynb` for a simple example.
 
 **(1) Prerequisites**
 
 - [SeisBench](https://github.com/seisbench/seisbench) is required to load and run the models.
 - [ObsPy](https://docs.obspy.org/) for data processing
 - Pandas for saving results
+
+**(2) Models**
+
+Final_models
+├── demo.ipynb            # a demo
+├── volpick               # models presented in the paper, trained on the data splits of 83.6% (training), 5.5% (validation), 10.9% (testing)
+└── volpick_95train_5val  # models trained on the data splits of 94.5% (training), 5.5% (validation), 0% (testing), with the above test set included into the training set
+
+Here the models in the `volpick` folder is the models presented in our paper. 
+
+Since we had tested the models, we then included the test set (including those along the Nankai trough and the Cascadia subduction zone) into the training set, and the resulting models are in folder `volpick_95train_5val`. It may be risky to use the models in `volpick_95train_5val` because the test set has been moved to the training set. However, we expect that the performances of models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset give a more robust model.
+
+If you are not sure which to use, we recommend using `volpick`.
 
 **(2) Applying the model to seismic waveforms using seisbench**
 
@@ -64,7 +77,7 @@ pick_df = picklist2df(picks)
 pick_df.to_csv("picks.csv",index=False)
 ```
 
-See `Final_models/demo.ipynb` for a simple example.
+
 
 
 
