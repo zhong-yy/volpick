@@ -40,7 +40,7 @@ picks = picker.classify(
           parallelism=None, # https://github.com/seisbench/seisbench/issues/272
           P_threshold=P_threshold,
           S_threshold=S_threshold,
-          copy=False,
+          copy=True,
           # copy: If true, copies the input stream. Otherwise, the input stream is modified in place.
           # See https://github.com/seisbench/seisbench/commit/862d9ee708c2c3e737da4e90ab3355471aa01ecf
       ).picks
