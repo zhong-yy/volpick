@@ -100,6 +100,7 @@ pick_df.to_csv("picks.csv",index=False)
 The scripts and notebooks represent the workflow we used to process data, train and evaluate deep-learning phase pickers on volcano seismicity in the paper. The scripts are not designed as a package for general purposes, so there are inevitably some quick and dirty code implementations. 
 
 **Summary of some files**
+
 `volpick/data/data.py`: a module for downloading and formatting data
 
 `volpick/data/convert.py` convert downloaded mseed files and original metadata to hdf5+csv files in seisbench
