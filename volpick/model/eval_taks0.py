@@ -383,6 +383,8 @@ def eval_task0(
     root_save_dir=None,
     append_to_file=False,
     count_tp_method=0,
+    no_p=False,
+    no_s=False,
     # search_method="grid",
     # binary_search_n=-1,
 ):
@@ -392,6 +394,7 @@ def eval_task0(
     num_test_run: for debugging purpose, if it is greater than 0, only the specified number of examples will be evaluated
     search_method: grid (search) or binary (search)
     """
+    assert not (no_p and no_s)
     # if search_method not in ["binary", "grid"]:
     #     raise ValueError("search_method should be binary or grid")
     # if search_method == "binary" and binary_search_n < 2:
@@ -420,10 +423,10 @@ def eval_task0(
                 "Overwriting noise trace_names to allow correct identification"
             )
             # Replace trace names for noise entries
-            split._metadata["trace_name"].values[
-                -len(split.datasets[-1]) :
-            ] = split._metadata["trace_name"][-len(split.datasets[-1]) :].apply(
-                lambda x: "noise_" + x
+            split._metadata["trace_name"].values[-len(split.datasets[-1]) :] = (
+                split._metadata["trace_name"][-len(split.datasets[-1]) :].apply(
+                    lambda x: "noise_" + x
+                )
             )
             split._build_trace_name_to_idx_dict()
 
@@ -434,6 +437,10 @@ def eval_task0(
         task_csv = targets_path / "task0.csv"
         task_targets = pd.read_csv(task_csv)
         task_targets = task_targets[task_targets["trace_split"] == eval_set]
+        if no_p:
+            task_targets = task_targets[pd.isna(task_targets["trace_p_arrival_sample"])]
+        if no_s:
+            task_targets = task_targets[pd.isna(task_targets["trace_s_arrival_sample"])]
         if targets_path.name == "instance":
             border = _identify_instance_dataset_border(task_targets)
             task_targets["trace_name"].values[border:] = task_targets["trace_name"][
@@ -537,179 +544,182 @@ def eval_task0(
                 generator, p_arrival_sample_column, s_arrival_sample_column
             )
 
-            TP_p, FP_p, FN_p, tps_p, fps_p, fns_p = count_TP_FP_FN(
-                p_idxs_ground_truth,
-                p_idxs_predicted,
-                tp_thre=tp_thre,
-                sampling_rate=100,
-                method=count_tp_method,
-            )
-            precision_p, recall_p, F1score_p = calculate_precision_recall_F1score(
-                TP_p, FP_p, FN_p
-            )
-
-            TP_s, FP_s, FN_s, tps_s, fps_s, fns_s = count_TP_FP_FN(
-                s_idxs_ground_truth,
-                s_idxs_predicted,
-                tp_thre=tp_thre,
-                sampling_rate=100,
-                method=count_tp_method,
-            )
-            precision_s, recall_s, F1score_s = calculate_precision_recall_F1score(
-                TP_s, FP_s, FN_s
-            )
-
-            residuals_p = compute_residuals(
-                p_idxs_ground_truth,
-                p_idxs_predicted,
-                sampling_rate=100,
-                method=count_tp_method,
-            )
-            if len(residuals_p) == 0:
-                print(f"No predicted P picks")
-                p_std = None
-                p_mean = None
-                p_median = None
-                p_mae = None
-                p_mad = None
-
-                p_outlier = None
-                p_out = None
-
-                modified_residuals_p = None
-                modified_residuals_p2 = None
-
-                modified_p_std = None
-                modified_p_rmse = None
-                modified_p_mae = None
-
-                modified_p_std2 = None
-                modified_p_rmse2 = None
-                modified_p_mae2 = None
-
-                modified_p_mean = None
-                modified_p_median = None
-                modified_p_mean2 = None
-                modified_p_median2 = None
-                modified_p_mad = None
-                modified_p_mad2 = None
-            else:
-                p_std = np.std(residuals_p, ddof=1)
-                p_mean = np.mean(residuals_p)
-                p_median = np.median(residuals_p)
-                p_mae = np.mean(np.abs(residuals_p))  # mean absolute error
-                p_mad = np.median(np.abs(residuals_p - np.median(residuals_p)))
-
-                p_outlier = residuals_p[(residuals_p < -1) | (residuals_p > 1)].copy()
-                p_out = p_outlier.size / residuals_p.size
-
-                modified_residuals_p = residuals_p.copy()  # modified residuals
-                modified_residuals_p[modified_residuals_p < -1] = -1
-                modified_residuals_p[modified_residuals_p > 1] = 1
-                modified_p_std = np.std(modified_residuals_p, ddof=1)
-                modified_p_rmse = np.sqrt(np.mean(modified_residuals_p**2))
-                modified_p_mae = np.mean(np.abs(modified_residuals_p))
-
-                modified_p_mean = np.mean(modified_residuals_p)
-                modified_p_median = np.median(modified_residuals_p)
-                modified_p_mad = np.median(
-                    np.abs(modified_residuals_p - np.median(modified_residuals_p))
+            if not no_p:
+                TP_p, FP_p, FN_p, tps_p, fps_p, fns_p = count_TP_FP_FN(
+                    p_idxs_ground_truth,
+                    p_idxs_predicted,
+                    tp_thre=tp_thre,
+                    sampling_rate=100,
+                    method=count_tp_method,
                 )
-
-                modified_residuals_p2 = residuals_p.copy()
-                modified_residuals_p2 = modified_residuals_p2[
-                    (modified_residuals_p2 > -1) & (modified_residuals_p2 < 1)
-                ]
-                modified_p_mean2 = np.mean(modified_residuals_p2)
-                modified_p_median2 = np.median(modified_residuals_p2)
-                modified_p_std2 = np.std(modified_residuals_p2, ddof=1)
-                modified_p_rmse2 = np.sqrt(np.mean(modified_residuals_p2**2))
-                modified_p_mae2 = np.mean(np.abs(modified_residuals_p2))
-
-                modified_p_mad2 = np.median(
-                    np.abs(modified_residuals_p2 - np.median(modified_residuals_p2))
+                precision_p, recall_p, F1score_p = calculate_precision_recall_F1score(
+                    TP_p, FP_p, FN_p
                 )
-                # m_p_mad = np.median(
-                #     np.abs(modified_residuals_p - np.median(modified_residuals_p))
-                # )
-
-            residuals_s = compute_residuals(
-                s_idxs_ground_truth,
-                s_idxs_predicted,
-                sampling_rate=100,
-                method=count_tp_method,
-            )
-            if len(residuals_s) == 0:
-                print(f"No predicted S picks")
-                s_std = None
-                s_mean = None
-                s_median = None
-                s_mae = None
-                s_mad = None
-
-                s_outlier = None
-                s_out = None
-                modified_residuals_s = None
-                modified_s_std = None
-                modified_s_rmse = None
-                modified_s_mae = None
-
-                modified_residuals_s2 = None
-                modified_s_std2 = None
-                modified_s_rmse2 = None
-                modified_s_mae2 = None
-
-                modified_s_mean = None
-                modified_s_median = None
-                modified_s_mean2 = None
-                modified_s_median2 = None
-                modified_s_mad = None
-                modified_s_mad2 = None
-            else:
-                s_std = np.std(residuals_s, ddof=1)
-                s_mean = np.mean(residuals_s)
-                s_median = np.median(residuals_p)
-                s_mae = np.mean(np.abs(residuals_s))
-                s_mad = np.median(np.abs(residuals_s - np.median(residuals_s)))
-
-                s_outlier = residuals_s[(residuals_s < -1) | (residuals_s > 1)].copy()
-                s_out = s_outlier.size / residuals_s.size
-                modified_residuals_s = residuals_s.copy()
-                modified_residuals_s[modified_residuals_s < -1] = -1
-                modified_residuals_s[modified_residuals_s > 1] = 1
-                modified_s_std = np.std(modified_residuals_s, ddof=1)
-                modified_s_rmse = np.sqrt(np.mean(modified_residuals_s**2))
-                modified_s_mae = np.mean(np.abs(modified_residuals_s))
-
-                modified_s_mean = np.mean(modified_residuals_s)
-                modified_s_median = np.median(modified_residuals_s)
-                modified_s_mad = np.median(
-                    np.abs(modified_residuals_s - np.median(modified_residuals_s))
+            if not no_s:
+                TP_s, FP_s, FN_s, tps_s, fps_s, fns_s = count_TP_FP_FN(
+                    s_idxs_ground_truth,
+                    s_idxs_predicted,
+                    tp_thre=tp_thre,
+                    sampling_rate=100,
+                    method=count_tp_method,
                 )
-
-                modified_residuals_s2 = residuals_s.copy()
-                modified_residuals_s2 = modified_residuals_s2[
-                    (modified_residuals_s2 > -1) & (modified_residuals_s2 < 1)
-                ]
-
-                modified_s_std2 = np.std(modified_residuals_s2, ddof=1)
-                modified_s_rmse2 = np.sqrt(np.mean(modified_residuals_s2**2))
-                modified_s_mae2 = np.mean(np.abs(modified_residuals_s2))
-
-                modified_s_mean2 = np.mean(modified_residuals_s2)
-                modified_s_median2 = np.median(modified_residuals_s2)
-
-                modified_s_mad2 = np.median(
-                    np.abs(modified_residuals_s2 - np.median(modified_residuals_s2))
+                precision_s, recall_s, F1score_s = calculate_precision_recall_F1score(
+                    TP_s, FP_s, FN_s
                 )
-                # m_s_mad = np.median(
-                #     np.abs(modified_residuals_s - np.median(modified_residuals_s))
-                # )
+            if not no_p:
+                residuals_p = compute_residuals(
+                    p_idxs_ground_truth,
+                    p_idxs_predicted,
+                    sampling_rate=100,
+                    method=count_tp_method,
+                )
+                if len(residuals_p) == 0:
+                    print(f"No predicted P picks")
+                    p_std = None
+                    p_mean = None
+                    p_median = None
+                    p_mae = None
+                    p_mad = None
 
-            metrics.append(
-                {
-                    "prob_thre": prob_thre,
-                    "tp_thre": tp_thre,
+                    p_outlier = None
+                    p_out = None
+
+                    modified_residuals_p = None
+                    modified_residuals_p2 = None
+
+                    modified_p_std = None
+                    modified_p_rmse = None
+                    modified_p_mae = None
+
+                    modified_p_std2 = None
+                    modified_p_rmse2 = None
+                    modified_p_mae2 = None
+
+                    modified_p_mean = None
+                    modified_p_median = None
+                    modified_p_mean2 = None
+                    modified_p_median2 = None
+                    modified_p_mad = None
+                    modified_p_mad2 = None
+                else:
+                    p_std = np.std(residuals_p, ddof=1)
+                    p_mean = np.mean(residuals_p)
+                    p_median = np.median(residuals_p)
+                    p_mae = np.mean(np.abs(residuals_p))  # mean absolute error
+                    p_mad = np.median(np.abs(residuals_p - np.median(residuals_p)))
+
+                    p_outlier = residuals_p[
+                        (residuals_p < -1) | (residuals_p > 1)
+                    ].copy()
+                    p_out = p_outlier.size / residuals_p.size
+
+                    modified_residuals_p = residuals_p.copy()  # modified residuals
+                    modified_residuals_p[modified_residuals_p < -1] = -1
+                    modified_residuals_p[modified_residuals_p > 1] = 1
+                    modified_p_std = np.std(modified_residuals_p, ddof=1)
+                    modified_p_rmse = np.sqrt(np.mean(modified_residuals_p**2))
+                    modified_p_mae = np.mean(np.abs(modified_residuals_p))
+
+                    modified_p_mean = np.mean(modified_residuals_p)
+                    modified_p_median = np.median(modified_residuals_p)
+                    modified_p_mad = np.median(
+                        np.abs(modified_residuals_p - np.median(modified_residuals_p))
+                    )
+
+                    modified_residuals_p2 = residuals_p.copy()
+                    modified_residuals_p2 = modified_residuals_p2[
+                        (modified_residuals_p2 > -1) & (modified_residuals_p2 < 1)
+                    ]
+                    modified_p_mean2 = np.mean(modified_residuals_p2)
+                    modified_p_median2 = np.median(modified_residuals_p2)
+                    modified_p_std2 = np.std(modified_residuals_p2, ddof=1)
+                    modified_p_rmse2 = np.sqrt(np.mean(modified_residuals_p2**2))
+                    modified_p_mae2 = np.mean(np.abs(modified_residuals_p2))
+
+                    modified_p_mad2 = np.median(
+                        np.abs(modified_residuals_p2 - np.median(modified_residuals_p2))
+                    )
+                    # m_p_mad = np.median(
+                    #     np.abs(modified_residuals_p - np.median(modified_residuals_p))
+                    # )
+
+            if not no_s:
+                residuals_s = compute_residuals(
+                    s_idxs_ground_truth,
+                    s_idxs_predicted,
+                    sampling_rate=100,
+                    method=count_tp_method,
+                )
+                if len(residuals_s) == 0:
+                    print(f"No predicted S picks")
+                    s_std = None
+                    s_mean = None
+                    s_median = None
+                    s_mae = None
+                    s_mad = None
+
+                    s_outlier = None
+                    s_out = None
+                    modified_residuals_s = None
+                    modified_s_std = None
+                    modified_s_rmse = None
+                    modified_s_mae = None
+
+                    modified_residuals_s2 = None
+                    modified_s_std2 = None
+                    modified_s_rmse2 = None
+                    modified_s_mae2 = None
+
+                    modified_s_mean = None
+                    modified_s_median = None
+                    modified_s_mean2 = None
+                    modified_s_median2 = None
+                    modified_s_mad = None
+                    modified_s_mad2 = None
+                else:
+                    s_std = np.std(residuals_s, ddof=1)
+                    s_mean = np.mean(residuals_s)
+                    s_median = np.median(residuals_s)
+                    s_mae = np.mean(np.abs(residuals_s))
+                    s_mad = np.median(np.abs(residuals_s - np.median(residuals_s)))
+
+                    s_outlier = residuals_s[
+                        (residuals_s < -1) | (residuals_s > 1)
+                    ].copy()
+                    s_out = s_outlier.size / residuals_s.size
+                    modified_residuals_s = residuals_s.copy()
+                    modified_residuals_s[modified_residuals_s < -1] = -1
+                    modified_residuals_s[modified_residuals_s > 1] = 1
+                    modified_s_std = np.std(modified_residuals_s, ddof=1)
+                    modified_s_rmse = np.sqrt(np.mean(modified_residuals_s**2))
+                    modified_s_mae = np.mean(np.abs(modified_residuals_s))
+
+                    modified_s_mean = np.mean(modified_residuals_s)
+                    modified_s_median = np.median(modified_residuals_s)
+                    modified_s_mad = np.median(
+                        np.abs(modified_residuals_s - np.median(modified_residuals_s))
+                    )
+
+                    modified_residuals_s2 = residuals_s.copy()
+                    modified_residuals_s2 = modified_residuals_s2[
+                        (modified_residuals_s2 > -1) & (modified_residuals_s2 < 1)
+                    ]
+
+                    modified_s_std2 = np.std(modified_residuals_s2, ddof=1)
+                    modified_s_rmse2 = np.sqrt(np.mean(modified_residuals_s2**2))
+                    modified_s_mae2 = np.mean(np.abs(modified_residuals_s2))
+
+                    modified_s_mean2 = np.mean(modified_residuals_s2)
+                    modified_s_median2 = np.median(modified_residuals_s2)
+
+                    modified_s_mad2 = np.median(
+                        np.abs(modified_residuals_s2 - np.median(modified_residuals_s2))
+                    )
+                    # m_s_mad = np.median(
+                    #     np.abs(modified_residuals_s - np.median(modified_residuals_s))
+                    # )
+            if not no_p:
+                p_stats = {
                     "p_TP": TP_p,
                     "p_FP": FP_p,
                     "p_FN": FN_p,
@@ -734,6 +744,11 @@ def eval_task0(
                     "p_modified_RMSE2": modified_p_rmse2,
                     "p_modified_MAE2": modified_p_mae2,
                     "p_modified_MAD2": modified_p_mad2,
+                }
+            else:
+                p_stats = {}
+            if not no_s:
+                s_stats = {
                     "s_TP": TP_s,
                     "s_FP": FP_s,
                     "s_FN": FN_s,
@@ -759,12 +774,26 @@ def eval_task0(
                     "s_modified_MAE2": modified_s_mae2,
                     "s_modified_MAD2": modified_s_mad2,
                 }
+            else:
+                s_stats = {}
+
+            metrics.append(
+                {"prob_thre": prob_thre, "tp_thre": tp_thre, **p_stats, **s_stats}
             )
         metrics_form = pd.DataFrame(metrics)
 
         # task_targets.to_csv(, index=False)
+        if no_s:
+            fname_suffix = "_p"
+        if no_p:
+            fname_suffix = "_s"
+        if (not no_p) and (not no_s):
+            fname_suffix = ""
+        print(fname_suffix)
 
-        output_metrics_file = pred_path / exp_name / f"{eval_set}_metrics.csv"
+        output_metrics_file = (
+            pred_path / exp_name / f"{eval_set}_metrics{fname_suffix}.csv"
+        )
         if append_to_file == True and output_metrics_file.exists():
             previous_metrics_form = pd.read_csv(output_metrics_file, index_col=False)
             new_metrics_form = pd.concat(
@@ -775,7 +804,8 @@ def eval_task0(
             )
             new_metrics_form.to_csv(output_metrics_file, index=False)
             previous_task_targets = pd.read_csv(
-                pred_path / exp_name / f"{eval_set}_task0.csv", index_col=False
+                pred_path / exp_name / f"{eval_set}_task0{fname_suffix}.csv",
+                index_col=False,
             )
             for col_name in task_targets.columns:
                 if (col_name not in previous_task_targets) and (
@@ -784,12 +814,14 @@ def eval_task0(
                 ):
                     previous_task_targets[col_name] = task_targets[col_name]
             previous_task_targets.to_csv(
-                pred_path / exp_name / f"{eval_set}_task0.csv", index=False
+                pred_path / exp_name / f"{eval_set}_task0{fname_suffix}.csv",
+                index=False,
             )
         else:
             metrics_form.to_csv(output_metrics_file, index=False)
             task_targets.to_csv(
-                pred_path / exp_name / f"{eval_set}_task0.csv", index=False
+                pred_path / exp_name / f"{eval_set}_task0{fname_suffix}.csv",
+                index=False,
             )
 
 

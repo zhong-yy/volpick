@@ -11,7 +11,16 @@ from pytorch_lightning.loggers import TensorBoardLogger, CSVLogger
 # https://github.com/Lightning-AI/lightning/pull/12554
 # https://github.com/Lightning-AI/lightning/issues/11796
 from pytorch_lightning.callbacks import DeviceStatsMonitor
-from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
+from pytorch_lightning.callbacks import (
+    ModelCheckpoint,
+    LearningRateMonitor,
+    StochasticWeightAveraging,
+    EarlyStopping,
+    LearningRateFinder,
+)
+from pytorch_lightning.tuner import Tuner
+
+
 import packaging
 import argparse
 import json
@@ -27,6 +36,28 @@ import seisbench.models as sbm
 import time
 import datetime
 from pathlib import Path
+from volpick.model.ema import EMA, EMAModelCheckpoint
+
+
+# class FineTuneLearningRateFinder(LearningRateFinder):
+#     def __init__(self, milestones, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.milestones = milestones
+
+#     def on_fit_start(self, *args, **kwargs):
+#         return
+
+#     def on_train_epoch_start(self, trainer, pl_module):
+#         if trainer.current_epoch in self.milestones or trainer.current_epoch == 0:
+#             self.lr_find(trainer, pl_module)
+#             # Plot with
+#             fig = self.optimal_lr.plot(suggest=True)
+#             fig.savefig(
+#                 Path(trainer.logger.log_dir) / f"lr_finder{trainer.current_epoch}.jpg",
+#                 dpi=300,
+#             )
+#             print(self.optimal_lr.suggestion())
+#             print(pl_module.lr)
 
 
 def train(config, experiment_name, test_run):
@@ -50,8 +81,13 @@ def train(config, experiment_name, test_run):
     """
     code_start_time = time.perf_counter()
 
+    monitored_loss = "val_loss"
+    if config["whole_dataset"]:
+        monitored_loss = "train_loss"
+        print("Training on the whole dataset: monitoring training loss only.")
+
     model = models.__getattribute__(config["model"] + "Lit")(
-        **config.get("model_args", {})
+        lr_monitor=monitored_loss, **config.get("model_args", {})
     )
     pretrained = config.get("pretrained", None)
     if pretrained is not None:
@@ -77,7 +113,7 @@ def train(config, experiment_name, test_run):
         f"""Using the augmentation of superimposing events/noise: {config.get("stack_data", False)}"""
     )
     train_loader, dev_loader = prepare_data(config, model, test_run)
-    print(len(train_loader.dataset))
+    print(f"{len(train_loader)} batches in the training data loader.")
 
     # CSV logger - also used for saving configuration as yaml
     save_dir = config.get("save_dir", "weights")
@@ -93,13 +129,55 @@ def train(config, experiment_name, test_run):
         tb_logger.log_hyperparams(config)
         loggers += [tb_logger]
 
+    if config.get("whole_dataset", None):
+        checkpoint_every_n_train_steps = 5
+    else:
+        checkpoint_every_n_train_steps = None
+
     checkpoint_callback = ModelCheckpoint(
-        save_top_k=1, filename="{epoch}-{step}", monitor="val_loss", mode="min"
+        save_top_k=1,
+        save_last=True,
+        filename="{epoch}-{step}",
+        monitor=monitored_loss,
+        mode="min",
+        every_n_train_steps=checkpoint_every_n_train_steps,
     )  # save_top_k=1, monitor="val_loss", mode="min": save the best model in terms of validation loss
     lr_monitor = LearningRateMonitor(
-        logging_interval="epoch"
+        logging_interval="step"
     )  # Monitoring learning rate
     callbacks = [checkpoint_callback, lr_monitor]
+
+    if config.get("swa", None):
+        print("Enable stochastic weight averaging")
+        callbacks.append(StochasticWeightAveraging(**config.get("swa", {})))
+    if config.get("ema", False):
+        emadecay = 0.999
+        print(f"Enable EMA. Decay: {emadecay}.")
+        emacallback = EMA(
+            decay=emadecay,
+            validate_original_weights=False,
+            every_n_steps=1,
+            cpu_offload=False,
+        )
+        # emacallback = EMA(
+        #     decay=emadecay,
+        #     apply_ema_every_n_steps=1,
+        #     start_step=0,
+        #     save_ema_weights_in_callback_state=True,
+        #     evaluate_ema_weights_instead=True,
+        # )
+        checkpoint_callback = EMAModelCheckpoint(
+            save_top_k=1,
+            save_last=True,
+            filename="{epoch}-{step}",
+            monitor=monitored_loss,
+            mode="min",
+        )
+        callbacks = [checkpoint_callback, lr_monitor, emacallback]
+    if config.get("early_stop", False):
+        callbacks.append(
+            EarlyStopping(monitor=monitored_loss, patience=100, mode="min")
+        )
 
     ## Uncomment the following 2 lines to enable
     # device_stats = DeviceStatsMonitor()
@@ -109,9 +187,22 @@ def train(config, experiment_name, test_run):
         default_root_dir=default_root_dir,
         logger=loggers,
         callbacks=callbacks,
-        log_every_n_steps=10,
+        log_every_n_steps=5,
         **config.get("trainer_args", {}),
     )
+
+    if config.get("auto_lr", False):
+        # Create a Tuner
+        tuner = Tuner(trainer)
+
+        # finds learning rate automatically
+        # sets hparams.lr or hparams.learning_rate to that learning rate
+        lr_finder = tuner.lr_find(
+            model, train_loader, dev_loader, min_lr=1e-5, max_lr=1e-2, num_training=200
+        )
+        fig = lr_finder.plot(suggest=True)
+        fig.savefig(Path(trainer.logger.log_dir) / "lr_finder.jpg", dpi=300)
+        print(model.lr)
 
     trainer.fit(model, train_loader, dev_loader)
 
@@ -170,19 +261,28 @@ def prepare_data(config, model, test_run):
 
         dataset._metadata["split"] = split
 
+    if config["whole_dataset"]:
+        print(
+            "Train the model on the whole data set. "
+            "The model can be trained on the whole data set only after"
+            "we have trained and tested a model using a train/validation/test split."
+        )
+        split = np.array(["train"] * len(dataset))
+        dataset._metadata["split"] = split
+
     train_data = dataset.train()
     dev_data = dataset.dev()
 
     if test_run:
         # Only use a small part of the dataset
         train_mask = np.zeros(len(train_data), dtype=bool)
-        train_mask[:100] = True
+        train_mask[:1000] = True
         train_data.filter(train_mask, inplace=True)
 
         dev_mask = np.zeros(len(dev_data), dtype=bool)
-        dev_mask[:100] = True
+        dev_mask[:1000] = True
         dev_data.filter(dev_mask, inplace=True)
-        batch_size = config["batch_size"] = 100
+        batch_size = config["batch_size"] = 10
 
     training_fraction = config.get("training_fraction", 1.0)
     apply_training_fraction(training_fraction, train_data)
@@ -285,6 +385,13 @@ if __name__ == "__main__":
         "Intended for debug purposes.",
     )
     parser.add_argument(
+        "--whole_dataset",
+        action="store_true",
+        help="If true, train the model on the whole data set. "
+        "The model can be trained on the whole data set only after "
+        "we have trained and tested a model using a train/validation/test split.",
+    )
+    parser.add_argument(
         "--lr",
         default=None,
         type=float,
@@ -317,5 +424,6 @@ if __name__ == "__main__":
         config["read_data_method"] = "name"
     if args.test_run:
         experiment_name = experiment_name + "_test"
+    config["whole_dataset"] = args.whole_dataset
 
     train(config, experiment_name, test_run=args.test_run)

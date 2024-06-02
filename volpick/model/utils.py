@@ -27,88 +27,174 @@ def load_best_model_from_base_dir(
     weight_path,
     version=-1,
     model_labels=None,
+    plot_train_loss=True,
+    plot_val_loss=True,
     plot_loss=True,
     device="cuda",
     return_config=False,
+    last=False,
+    monitor="val_loss",
+    ema=False,
+    start_epoch_plot=0,
+    plot_step=False,
 ):
     weights = Path(weight_path)
-    version = sorted(list(weights.iterdir()), key=lambda x: int(x.name.split("_")[1]))[
-        version
-    ]
+    version = sorted(
+        [x for x in weights.iterdir() if x.is_dir()],
+        key=lambda x: int(x.name.split("_")[1]),
+    )[version]
+    # print(version)
     config_path = version / "hparams.yaml"
     with open(config_path, "r") as f:
         config = yaml.full_load(f)
 
     model_cls = models.__getattribute__(config["model"] + "Lit")
     lightning_model, best_epoch, best_step = load_best_model(
-        model_cls, weights, version.name, return_best_epoch_number=True
+        model_cls,
+        weights,
+        version.name,
+        return_best_epoch_number=True,
+        monitor=monitor,
+        ema=ema,
     )
-    # model=model.model
     lightning_model.model.cuda(device)
+    if last:
+        lightning_model_last = load_last_model(
+            model_cls, weights, version.name, ema=ema
+        )
+        lightning_model_last.model.cuda(device)
+
     if model_labels is not None:
         lightning_model.model.labels = model_labels
+        if last:
+            lightning_model_last.model.labels = model_labels
         print(f"Setting model.labels to {model_labels}")
     elif config["model"] == "PhaseNet":
         lightning_model.model.labels = "PSN"
+        if last:
+            lightning_model_last.model.labels = "PSN"
     # model.labels="PSN" # important for evaluate() function to treat the output correctly, because the training data is in the order of P S N !!!
 
-    if plot_loss == True:
+    if (plot_train_loss or plot_val_loss) and plot_loss:
         # loss curve
-        # print(weights)
-        # print(version.name)
-        # print((weights / version.name / "metrics.csv"))
         print((weights / version.name / "metrics.csv").exists())
         metrics_log = pd.read_csv(weights / version.name / "metrics.csv")
 
         # read data
-        # epoch_val=metrics_log["epoch"][~pd.isna(metrics_log["val_loss"])]
-        # step_val=metrics_log["step"][~pd.isna(metrics_log["val_loss"])]
-        # val_loss=metrics_log["val_loss"][~pd.isna(metrics_log["val_loss"])]
-
-        val_loss = metrics_log.drop_duplicates(subset=["epoch"], keep="last")
-        train_loss = metrics_log[pd.notna(metrics_log["train_loss"])].drop_duplicates(
-            subset=["epoch"], keep="last"
+        if monitor == "val_loss":
+            val_loss = metrics_log.drop_duplicates(subset=["epoch"], keep="last")
+            print(
+                f"Min val_loss: {np.argmin(val_loss['val_loss'])}, {min(val_loss['val_loss'])}"
+            )
+        if not plot_step:
+            train_loss = metrics_log[
+                pd.notna(metrics_log["train_loss"])
+            ].drop_duplicates(subset=["epoch"], keep="last")
+        else:
+            train_loss = metrics_log[pd.notna(metrics_log["train_loss"])]
+        steps_each_epoch = (
+            metrics_log.drop_duplicates(subset="epoch", keep="last").iloc[0]["step"] + 1
+        )
+        print(
+            f"Min train_loss: {train_loss.iloc[np.argmin(train_loss['train_loss'])]['epoch']}, {min(train_loss['train_loss'])}"
         )
         lrs = metrics_log[pd.notna(metrics_log["lr-Adam"])]["lr-Adam"].to_numpy()
-        # plot
-        # metrics_epoch_train=metrics_log[~pd.isna(metrics_log["train_loss"])].groupby(["epoch"],as_index=False).last()
-        # print(metrics_epoch_train)
         fig, axs = plt.subplots(2, 1, figsize=(6, 6), sharex="col")
-        # plt.semilogy(metrics_epoch_train["epoch"]+1,metrics_epoch_train["train_loss"],label="train_loss")
-        # plt.semilogy(epoch_val+1,val_loss,label="val_loss")
-        axs[0].semilogy(
-            train_loss["epoch"] + 1, train_loss["train_loss"], label="Training loss"
-        )
-        axs[0].semilogy(
-            val_loss["epoch"] + 1, val_loss["val_loss"], label="Validation loss"
-        )
-        # axs[0].axvline()
+        if not last:
+            if not plot_step:
+                axs[0].axvline(best_epoch, ls="--", color="black", lw=0.5, label="Best")
+                axs[1].axvline(best_epoch, ls="--", color="black", lw=0.5)
+            else:
+                axs[0].axvline(
+                    best_step / steps_each_epoch,
+                    ls="--",
+                    color="black",
+                    lw=0.5,
+                    label="Best",
+                )
+                axs[1].axvline(
+                    best_step / steps_each_epoch, ls="--", color="black", lw=0.5
+                )
+        if plot_train_loss and plot_loss:
+            if not plot_step:
+                axs[0].semilogy(
+                    train_loss[train_loss["epoch"] > start_epoch_plot]["epoch"],
+                    train_loss[train_loss["epoch"] > start_epoch_plot]["train_loss"],
+                    label="Training loss",
+                )
+            else:
+                axs[0].semilogy(
+                    train_loss[train_loss["epoch"] > start_epoch_plot]["step"]
+                    / steps_each_epoch,
+                    train_loss[train_loss["epoch"] > start_epoch_plot]["train_loss"],
+                    label="Training loss",
+                )
+        if monitor == "val_loss" and (plot_val_loss and plot_loss):
+            axs[0].semilogy(
+                val_loss[val_loss["epoch"] > start_epoch_plot]["step"]
+                / steps_each_epoch,
+                val_loss[val_loss["epoch"] > start_epoch_plot]["val_loss"],
+                label="Validation loss",
+            )
+
         axs[0].legend()
 
-        # ax2 = plt.gca().twinx()
-        # ax2.spines["right"].set_color("red")
-        # ax2.tick_params(axis="y", color="red", labelcolor="red")
+        # if not plot_step:
+        #     axs[1].semilogy(
+        #         metrics_log.loc[
+        #             metrics_log[pd.notna(metrics_log["lr-Adam"])].index + 1
+        #         ]["epoch"].values[start_epoch_plot:],
+        #         metrics_log[pd.notna(metrics_log["lr-Adam"])]["lr-Adam"].values[
+        #             start_epoch_plot:
+        #         ],
+        #         linestyle="-",
+        #         color="red",
+        #         label="Learning rate",
+        #     )
+        # else:
         axs[1].semilogy(
-            train_loss["epoch"] + 1,
-            lrs,
+            # metrics_log.loc[metrics_log[pd.notna(metrics_log["lr-Adam"])].index + 1][
+            #     "epoch"
+            # ].values[start_epoch_plot:],
+            metrics_log[
+                pd.notna(metrics_log["lr-Adam"])
+                & (metrics_log["step"] / steps_each_epoch > start_epoch_plot)
+            ]["step"].values
+            / steps_each_epoch,
+            metrics_log[
+                pd.notna(metrics_log["lr-Adam"])
+                & (metrics_log["step"] / steps_each_epoch > start_epoch_plot)
+            ]["lr-Adam"].values,
             linestyle="-",
             color="red",
             label="Learning rate",
         )
         axs[1].legend()
         # axs[0].set_xlim([0, 25])
-        print(min(val_loss["val_loss"]))
+
         plt.xlabel("Epoch")
         plt.savefig(weights / version.name / "loss", bbox_inches="tight", dpi=300)
         print(weights / version.name)
-
-    if return_config:
-        return lightning_model, config
+    if last:
+        if return_config:
+            return lightning_model, lightning_model_last, config
+        else:
+            return lightning_model, lightning_model_last
     else:
-        return lightning_model
+        if return_config:
+            return lightning_model, config
+        else:
+            return lightning_model
 
 
-def load_best_model(model_cls, weights, version, return_best_epoch_number=False):
+def load_best_model(
+    model_cls,
+    weights,
+    version,
+    return_best_epoch_number=False,
+    monitor="val_loss",
+    ema=False,
+):
     """
     Determines the model with lowest validation loss from the csv logs and loads it
 
@@ -119,13 +205,18 @@ def load_best_model(model_cls, weights, version, return_best_epoch_number=False)
     """
     metrics = pd.read_csv(weights / version / "metrics.csv")
 
-    idx = np.nanargmin(metrics["val_loss"])
+    idx = np.nanargmin(metrics[monitor])
     min_row = metrics.iloc[idx]
 
     #  For default checkpoint filename, see https://github.com/Lightning-AI/lightning/pull/11805
     #  and https://github.com/Lightning-AI/lightning/issues/16636.
     #  For example, 'epoch=0-step=1.ckpt' means the 1st step has finish, but the 1st epoch hasn't
-    checkpoint = f"epoch={min_row['epoch']:.0f}-step={min_row['step']+1:.0f}.ckpt"
+    if ema:
+        checkpoint = (
+            f"epoch={min_row['epoch']:.0f}-step={min_row['step']+1:.0f}-EMA.ckpt"
+        )
+    else:
+        checkpoint = f"epoch={min_row['epoch']:.0f}-step={min_row['step']+1:.0f}.ckpt"
 
     # For default save path of checkpoints, see https://github.com/Lightning-AI/lightning/pull/12372
     checkpoint_path = weights / version / "checkpoints" / checkpoint
@@ -138,6 +229,20 @@ def load_best_model(model_cls, weights, version, return_best_epoch_number=False)
         )
     else:
         return model_cls.load_from_checkpoint(checkpoint_path)
+
+
+def load_last_model(
+    model_cls,
+    weights,
+    version,
+    ema=False,
+):
+    if ema:
+        checkpoint = f"last-EMA.ckpt"
+    else:
+        checkpoint = f"last.ckpt"
+    checkpoint_path = weights / version / "checkpoints" / checkpoint
+    return model_cls.load_from_checkpoint(checkpoint_path)
 
 
 def plot_prediction_examples(
@@ -357,7 +462,7 @@ def plot_prediction_examples(
                     wlen=256 / sampling_rate,
                     axes=axs[-3 + j],
                     cmap="jet",
-                    log=True
+                    log=True,
                     # dbscale=True,
                 )
                 axs[-3 + j].set_ylim([0.9, 50])

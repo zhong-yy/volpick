@@ -93,5 +93,83 @@ def to_seisbench_format_same():
     logger.info(f"Finish format conversion. Running time: {running_time}")
 
 
+def to_seisbench_format_one_phase():
+    catalog_table = pd.read_csv(alsk.save_dir / "mseed_one_phase_log" / "downloads.csv")
+    t1 = time.perf_counter()
+    phas = ["p", "s"]
+    lp_table_dict = {}
+    rg_table_dict = {}
+    lens = []
+    for phid in range(2):
+        pha = phas[phid]
+        pha2 = phas[1 - phid]
+
+        lp_table_dict[pha] = catalog_table[
+            (catalog_table["source_type"] == "lp")
+            & (pd.notna(catalog_table[f"trace_{pha}_arrival_time"]))
+            & (pd.isna(catalog_table[f"trace_{pha2}_arrival_time"]))
+        ].copy()
+
+        rg_table_dict[pha] = catalog_table[
+            (catalog_table["source_type"] != "lp")
+            & (pd.notna(catalog_table[f"trace_{pha}_arrival_time"]))
+            & (pd.isna(catalog_table[f"trace_{pha2}_arrival_time"]))
+        ].copy()
+        lens.append(len(lp_table_dict[pha]))
+        lens.append(len(rg_table_dict[pha]))
+    min_num_trace = min(lens)
+    print(min_num_trace)
+
+    for pha in ["p", "s"]:
+        lp_table_dict[pha] = lp_table_dict[pha].iloc[
+            np.sort(
+                np.random.default_rng(seed=100).choice(
+                    len(lp_table_dict[pha]), size=min_num_trace, replace=False
+                )
+            )
+        ]
+        rg_table_dict[pha] = rg_table_dict[pha].iloc[
+            np.sort(
+                np.random.default_rng(seed=100).choice(
+                    len(rg_table_dict[pha]), size=min_num_trace, replace=False
+                )
+            )
+        ]
+    lp_table = pd.concat(
+        [lp_table_dict["p"], lp_table_dict["s"]], ignore_index=True
+    ).copy()
+
+    rg_table = pd.concat(
+        [rg_table_dict["p"], rg_table_dict["s"]], ignore_index=True
+    ).copy()
+
+    # destination path
+    dest_dir = "/home/zhongyiyuan/DATA/my_datasets_seisbench/alaska_onephase"
+    logger.info(f"Start to convert lp waveforms p or s ...")
+
+    # convert lp waveforms
+    volpick.data.convert_mseed_to_seisbench(
+        lp_table,
+        mseed_dir=alsk.save_dir / "mseed_one_phase",
+        dest_dir=dest_dir,
+        chunk=f"_ak_onephase_lp",
+        skip_spikes=True,
+        split_prob=[0.85, 0.05, 0.1],
+    )
+
+    volpick.data.convert_mseed_to_seisbench(
+        rg_table,
+        mseed_dir=alsk.save_dir / "mseed_one_phase",
+        dest_dir=dest_dir,
+        chunk=f"_ak_onephase_rg",
+        skip_spikes=True,
+        split_prob=[0.85, 0.05, 0.1],
+    )
+    t2 = time.perf_counter()
+    running_time = str(datetime.timedelta(seconds=t2 - t1))
+    logger.info(f"Finish format conversion. Running time: {running_time}")
+
+
 if __name__ == "__main__":
-    to_seisbench_format_same()
+    # to_seisbench_format_same()
+    to_seisbench_format_one_phase()

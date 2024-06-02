@@ -127,6 +127,7 @@ class PhaseNetLit(SeisBenchModuleLit):
         rotate_array=False,
         lr_scheduler=None,
         lr_scheduler_args=None,
+        lr_monitor="val_loss",
         **kwargs,
     ):
         super().__init__()
@@ -141,6 +142,7 @@ class PhaseNetLit(SeisBenchModuleLit):
         self.rotate_array = rotate_array
         self.lr_scheduler = lr_scheduler
         self.lr_scheduler_args = lr_scheduler_args
+        self.lr_monitor = lr_monitor
 
         self.train_stacked_event_generator = None
         self.train_stacked_noise_generator = None
@@ -171,16 +173,16 @@ class PhaseNetLit(SeisBenchModuleLit):
         self.log("val_loss", loss, sync_dist=True)
         return loss
 
-    # # Learning rate warm-up
-    # def optimizer_step(self, epoch, batch_idx, optimizer, optimizer_closure):
-    #     # update params
-    #     optimizer.step(closure=optimizer_closure)
+    # Learning rate warm-up
+    def optimizer_step(self, epoch, batch_idx, optimizer, optimizer_closure):
+        # update params
+        optimizer.step(closure=optimizer_closure)
 
-    #     # manually warm up lr without a scheduler
-    #     if self.trainer.global_step < 500:
-    #         lr_scale = min(1.0, float(self.trainer.global_step + 1) / 500.0)
-    #         for pg in optimizer.param_groups:
-    #             pg["lr"] = lr_scale * self.lr
+        # manually warm up lr without a scheduler
+        if self.trainer.global_step < 500:
+            lr_scale = min(1.0, float(self.trainer.global_step + 1) / 500.0)
+            for pg in optimizer.param_groups:
+                pg["lr"] = lr_scale * self.lr
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -202,7 +204,7 @@ class PhaseNetLit(SeisBenchModuleLit):
                     # rate after every epoch/step.
                     "frequency": 1,
                     # Metric to to monitor for schedulers like `ReduceLROnPlateau`
-                    "monitor": "val_loss",
+                    "monitor": self.lr_monitor,
                     # If set to `True`, will enforce that the value specified 'monitor'
                     # is available when the scheduler is updated, thus stopping
                     # training if not found. If set to `False`, it will only produce a warning
@@ -502,6 +504,7 @@ class EQTransformerLit(SeisBenchModuleLit):
         prob_label_shape="gaussian",
         lr_scheduler=None,
         lr_scheduler_args=None,
+        lr_monitor="val_loss",
         **kwargs,
     ):
         super().__init__()
@@ -517,6 +520,7 @@ class EQTransformerLit(SeisBenchModuleLit):
         self.model = sbm.EQTransformer(**kwargs)
         self.lr_scheduler = lr_scheduler
         self.lr_scheduler_args = lr_scheduler_args
+        self.lr_monitor = lr_monitor
 
         self.train_stacked_event_generator = None
         self.train_stacked_noise_generator = None
@@ -554,6 +558,17 @@ class EQTransformerLit(SeisBenchModuleLit):
         self.log("val_loss", loss, sync_dist=True)
         return loss
 
+    # Learning rate warm-up
+    def optimizer_step(self, epoch, batch_idx, optimizer, optimizer_closure):
+        # update params
+        optimizer.step(closure=optimizer_closure)
+
+        # manually warm up lr without a scheduler
+        if self.trainer.global_step < 500:
+            lr_scale = min(1.0, float(self.trainer.global_step + 1) / 500.0)
+            for pg in optimizer.param_groups:
+                pg["lr"] = lr_scale * self.lr
+
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         if self.lr_scheduler:
@@ -574,7 +589,7 @@ class EQTransformerLit(SeisBenchModuleLit):
                     # rate after every epoch/step.
                     "frequency": 1,
                     # Metric to to monitor for schedulers like `ReduceLROnPlateau`
-                    "monitor": "val_loss",
+                    "monitor": self.lr_monitor,
                     # If set to `True`, will enforce that the value specified 'monitor'
                     # is available when the scheduler is updated, thus stopping
                     # training if not found. If set to `False`, it will only produce a warning

@@ -1039,7 +1039,8 @@ class JapanDataset(CatalogBase):
                 download_dir.mkdir(parents=True, exist_ok=False)
             except FileExistsError:
                 print(f"{download_dir} exists")
-        log_dir = self.save_dir / "mseed_log"
+        # log_dir = self.save_dir / "mseed_log"
+        log_dir = download_dir.parent / f"{download_dir.name}_log"
         if mp.parent_process() is None:  # check whether it is the main process
             try:
                 log_dir.mkdir(parents=True, exist_ok=False)
@@ -2787,8 +2788,15 @@ class AlaskaDataset(CatalogBase):
             table = pd.DataFrame(table_items)
             table.to_csv(to_file, index=False)
 
-    def retry_failed_downloads(self, exclude_list=["FDSNNoDataException"], **kwargs):
-        failed_downloads_log = self.save_dir / "mseed_log" / "failed_downloads.csv"
+    def retry_failed_downloads(
+        self, exclude_list=["FDSNNoDataException"], download_dir=None, **kwargs
+    ):
+        if download_dir is None:
+            download_dir = self.save_dir / "mseed"
+        if isinstance(download_dir, str):
+            download_dir = Path(download_dir)
+        log_dir = download_dir.parent / f"{download_dir.name}_log"
+        failed_downloads_log = log_dir / "failed_downloads.csv"
         df = pd.read_csv(failed_downloads_log)
         solvable_errors = df[~df["Error"].isin(exclude_list)].copy()
         if len(solvable_errors) > 0:
@@ -2798,12 +2806,15 @@ class AlaskaDataset(CatalogBase):
             excluded_errors.to_csv(failed_downloads_log, index=False, mode="w")
 
             # Re-download
-            self.download_data(retry=True, catalog_table=solvable_errors, **kwargs)
+            self.download_data(
+                retry=True,
+                catalog_table=solvable_errors,
+                download_dir=download_dir,
+                **kwargs,
+            )
 
             # Count the number of failed downloads that are still to be resovled
-            new_failed_downloads_log = (
-                self.save_dir / "mseed_log" / "failed_downloads.csv"
-            )
+            new_failed_downloads_log = log_dir / "failed_downloads.csv"
             new_df = pd.read_csv(new_failed_downloads_log)
             new_solvable_errors = new_df[~new_df["Error"].isin(exclude_list)].copy()
             return len(new_solvable_errors)
@@ -4150,7 +4161,7 @@ class ComCatDataset(AlaskaDataset):
             self.save_dir / "events_without_picks.csv", index=False
         )
 
-    def read_PNSN_events(self, pnsn_events_export_filename,source_type):
+    def read_PNSN_events(self, pnsn_events_export_filename, source_type):
         summary_df = pd.read_csv(pnsn_events_export_filename)
         summary_df["eventtype"] = source_type
         summary_df.rename(

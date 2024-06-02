@@ -131,6 +131,74 @@ def download():
     logger.info(f"Finished. Runing time {running_time}")
 
 
+def download_onephase():
+    alsk = volpick.data.AlaskaDataset()
+    t1 = time.perf_counter()
+
+    logger.info(f"Reading the whole catalog ...")
+    catalog_table = alsk.read(format="csv")
+
+    # Selecting those traces with both P and S
+    logger.info(f"Selecting the data with only P or S ...")
+    metadata = catalog_table[
+        (
+            (pd.isna(catalog_table["trace_s_arrival_time"]))
+            & (pd.notna(catalog_table["trace_p_arrival_time"]))
+        )
+        | (
+            (pd.notna(catalog_table["trace_s_arrival_time"]))
+            & (pd.isna(catalog_table["trace_p_arrival_time"]))
+        )
+    ].copy()
+
+    alsk = volpick.data.AlaskaDataset()
+    num_processes = 4
+    logger.info(
+        f"Starting downloading data (including LP and VT) with only P or only S. Save dir: {alsk.save_dir}. Number of processes: {num_processes}."
+    )
+    alsk.download_data(
+        catalog_table=metadata,
+        time_before=60,
+        time_after=60,
+        sampling_rate=100,
+        download_dir=alsk.save_dir / "mseed_one_phase",
+        num_processes=num_processes,
+    )
+    t2 = time.perf_counter()
+    running_time = str(datetime.timedelta(seconds=t2 - t1))
+    logger.info(f"Finished. Runing time {running_time}")
+
+
+def retry_onephase():
+    t1 = time.perf_counter()
+    alsk = volpick.data.AlaskaDataset()
+    logger.info(f"Trying resolving failed downloads")
+
+    n = alsk.retry_failed_downloads(
+        download_dir=alsk.save_dir / "mseed_one_phase",
+        time_before=60,
+        time_after=60,
+        sampling_rate=100,
+        num_processes=1,
+    )
+    logger.info(f"After re-downloading, there are {n} failed downloads to be resolved.")
+    while n != 0:
+        n = alsk.retry_failed_downloads(
+            download_dir=alsk.save_dir / "mseed_one_phase",
+            time_before=60,
+            time_after=60,
+            sampling_rate=100,
+            num_processes=1,
+        )
+        logger.info(
+            f"After re-downloading, there are {n} failed downloads to be resolved."
+        )
+
+    t2 = time.perf_counter()
+    running_time = str(datetime.timedelta(seconds=t2 - t1))
+    print(running_time)
+
+
 def retry():
     t1 = time.perf_counter()
     alsk = volpick.data.AlaskaDataset()
@@ -239,7 +307,8 @@ def to_seisbench_format_same():
 
 if __name__ == "__main__":
     # convert_catalog()
-    download()
-    retry()
-    # to_seisbench_format()
-    to_seisbench_format_same()
+    # download()
+    # retry()
+    # to_seisbench_format_same()
+    # download_onephase()
+    retry_onephase()

@@ -113,6 +113,67 @@ def download():
     logger.info(f"Finished. Runing time {running_time}")
 
 
+def download_onephase():
+    t1 = time.perf_counter()
+
+    logger.info(f"Reading the whole catalog ...")
+    catalog_table = hawaii.read(format="csv")
+
+    # Selecting those traces with both P and S
+    logger.info(f"Selecting the data with only P or S ...")
+    metadata = catalog_table[
+        (
+            (pd.isna(catalog_table["trace_s_arrival_time"]))
+            & (pd.notna(catalog_table["trace_p_arrival_time"]))
+        )
+        | (
+            (pd.notna(catalog_table["trace_s_arrival_time"]))
+            & (pd.isna(catalog_table["trace_p_arrival_time"]))
+        )
+    ].copy()
+
+    # select the same number of events
+    lp_table = metadata[metadata["source_type"] == "lp"].copy()
+    rg_table = metadata[metadata["source_type"] != "lp"].copy()
+
+    lp_ids = lp_table.drop_duplicates(
+        subset="source_id", keep="first", ignore_index=True, inplace=False
+    )["source_id"]
+    rg_ids = rg_table.drop_duplicates(
+        subset="source_id", keep="first", ignore_index=True, inplace=False
+    )["source_id"]
+
+    n_lp_events = len(lp_ids)
+    n_rg_events = len(rg_ids)
+    assert n_rg_events > n_lp_events
+
+    rand_events_idxs = np.sort(
+        np.random.default_rng(seed=50).choice(
+            rg_ids, size=n_lp_events * 3, replace=False
+        )
+    )
+    rand_rg_table = rg_table[rg_table["source_id"].isin(rand_events_idxs)].copy()
+    new_table = pd.concat([rand_rg_table, lp_table], ignore_index=True).copy()
+    print(f"""{len(new_table[new_table["source_type"]=="lp"])} lp traces""")
+    print(f"""{len(new_table[new_table["source_type"]!="lp"])} regular traces""")
+
+    num_processes = 8
+    logger.info(
+        f"Starting downloading data (including LP and VT) with only P or only S. Save dir: {hawaii.save_dir}. Number of processes: {num_processes}."
+    )
+    hawaii.download_data(
+        catalog_table=new_table,
+        time_before=60,
+        time_after=60,
+        sampling_rate=100,
+        download_dir=hawaii.save_dir / "mseed_one_phase",
+        num_processes=num_processes,
+    )
+    t2 = time.perf_counter()
+    running_time = str(datetime.timedelta(seconds=t2 - t1))
+    logger.info(f"Finished. Runing time {running_time}")
+
+
 def to_seisbench_format_same():
     t1 = time.perf_counter()
     catalog_table = pd.read_csv(hawaii.save_dir / "mseed_log" / "downloads.csv")
@@ -223,4 +284,5 @@ if __name__ == "__main__":
     # retry()
     # plot_waveforms()
     # plot_waveforms_gaps()
-    to_seisbench_format_same()
+    # to_seisbench_format_same()
+    download_onephase()

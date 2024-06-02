@@ -1,0 +1,36 @@
+{
+  "model": "PhaseNet",
+  "pretrained": null,
+  "data": "/home/zhongyiyuan/DATA/my_datasets_seisbench/vcseis",
+  "read_data_method": "path",
+  "training_fraction": 1,
+  "trainer_args": {
+    "accelerator": "gpu",
+    "devices": [
+      1
+    ],
+    "max_epochs": 400
+  },
+  "model_args": {
+    "sample_boundaries": [
+      null,
+      null
+    ],
+    "lr": 0.0005,
+    "norm": "peak",
+    "sigma": 20,
+    "prob_label_shape": "gaussian",
+    "lr_scheduler": "ReduceLROnPlateau",
+    "lr_scheduler_args": {
+      "factor": 0.5,
+      "patience": 20,
+      "min_lr": 1e-06
+    }
+  },
+  "ema":true,
+  "early_stop":true,
+  "stack_data": true,
+  "batch_size": 512,
+  "num_workers": 24,
+  "save_dir":"weights_test"
+}
