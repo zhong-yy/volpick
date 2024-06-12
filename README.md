@@ -26,7 +26,7 @@ Here the models in the `volpick` folder is the models presented in our paper.
 
 We also provide alternative models in folder `volpick_95train_5val`. They were trained by incorporating the test set into the training set. Since we had tested the models, it might be helpful to use the testing waveforms (including those along the Nankai trough and the Cascadia subduction zone) for training. It is risky to use the models in `volpick_95train_5val` because the test set has been "burned". However, we expect that the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset tends to give a more robust model. If you are not sure which one to use, we recommend using `volpick`.
 
-To load the models in SeisBench, you need to copy them to the model directory of SeisBench. The following shows the location of the SeisBench model directory.
+To load the models in SeisBench, you need to copy them to the model directory of SeisBench. The following code shows the model directory of SeisBench:
 ```python
 import seisbench.models as sbm
 print(
