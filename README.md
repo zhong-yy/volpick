@@ -119,7 +119,7 @@ format
 `model_training`: notebooks and scripts that invoke scripts from the volpick folder to train and evaluate models.
 
 # Reference
-Yiyuan Zhong and Yen Joe Tan. Deep-learning-based phase picking for volcano-tectonic and long-period earthquakes (2024): 10.1029/2024GL108438.
+Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcano‐tectonic and long‐period earthquakes. Geophysical Research Letters, 51, e2024GL108438. https://doi.org/10.1029/2024GL108438
 
 # Acknowledgement
 Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).

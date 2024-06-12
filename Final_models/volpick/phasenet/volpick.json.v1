@@ -1,5 +1,5 @@
 {
-    "docstring": "Model trained on volcanic earthquakes with a learning rate of 0.0005.\nThreshold selected for optimal F1 score on the validation set. Depending on the target region, the thresholds might need to be adjusted.\nWhen using this model, please reference\n\nYiyuan Zhong and Yen Joe Tan (2024). Deep-learning-based phase picking for volcano-tectonic and long-period earthquakes, Geophysical Research Letters.",
+    "docstring": "Model trained on volcano-tectonic and long-period earthquakes with a learning rate of 0.0005.\nThreshold selected for optimal F1 score on the validation set. Depending on the target region, the thresholds might need to be adjusted.\nWhen using this model, please reference\nYiyuan Zhong and Yen Joe Tan (2024). Geophysical Research Letters, 51, e2024GL108438. https://doi.org/10.1029/2024GL108438.",
     "model_args": {
         "component_order": "ZNE",
         "phases": "PSN",
