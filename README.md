@@ -22,22 +22,11 @@ Final_models
 └── volpick_95train_5val  # models trained on the data splits of 94.5% (training), 5.5% (validation), 0% (testing), with the above test set included into the training set
 ```
 
-Here the models in the `volpick` folder is the models presented in our paper.  
+Here the models in the `volpick` folder is the models presented in our paper. We also provide alternative models in folder `volpick_95train_5val`. They were trained by incorporating the test set into the training set. Since we had tested the models, it might be helpful to use the testing waveforms (including those along the Nankai trough and the Cascadia subduction zone) for training. It is risky to use the models in `volpick_95train_5val` because the test set has been "burned". However, we expect that the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset tends to give a more robust model. If you are not sure which one to use, we recommend using `volpick`.
 
-We also provide alternative models in folder `volpick_95train_5val`. They were trained by incorporating the test set into the training set. Since we had tested the models, it might be helpful to use the testing waveforms (including those along the Nankai trough and the Cascadia subduction zone) for training. It is risky to use the models in `volpick_95train_5val` because the test set has been "burned". However, we expect that the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset tends to give a more robust model. If you are not sure which one to use, we recommend using `volpick`.
+~~To load the models in SeisBench, you need to copy them to the model directory of SeisBench.~~  The model weights have been uploaded to the SeisBench repository and can be used through `from_pretrained('volpick')` or `from_pretrained('volpick_95train')` directly.
 
-To load the models in SeisBench, you need to copy them to the model directory of SeisBench. The following code shows the model directory of SeisBench:
-```python
-import seisbench.models as sbm
-print(
-    f"Copy all files in 'Final_models/volpick/phasenet' to {str(sbm.PhaseNet._pretrained_path('volpick')[0].parent)}"
-)
-print(
-    f"Copy all files in 'Final_models/volpick/eqtransformer' to {str(sbm.EQTransformer._pretrained_path('volpick')[0].parent)}"
-)
-```
-
-**(3) Code snippet of picking phase arrivals**
+**(3) Example snippet**
 
 The following code shows how to load the model in seisbench:
 ```python
@@ -47,7 +36,8 @@ import seisbench.models as sbm
 ...
 
 # Load the picker
-picker = sbm.EQTransformer.from_pretrained("volpick") # or picker = sbm.PhaseNet.from_pretrained("volpick")
+picker = sbm.EQTransformer.from_pretrained("volpick")
+# or picker = sbm.PhaseNet.from_pretrained("volpick")
 print(picker.weights_docstring)
 
 P_threshold=0.2
