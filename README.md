@@ -11,8 +11,6 @@ If you only care about how to use the model, please see folder `Final_models`, a
 **(1) Prerequisites**
 
 - [SeisBench](https://github.com/seisbench/seisbench) is required to load and run the models.
-- [ObsPy](https://docs.obspy.org/) for data processing
-- Pandas for saving results
 
 **(2) Models**
 ```
@@ -31,6 +29,7 @@ Here the models in the `volpick` folder is the models presented in our paper. We
 The following code shows how to load the model in seisbench:
 ```python
 import seisbench.models as sbm
+import pandas as pd
 ...
 # First read data into an obspy Stream
 ...
