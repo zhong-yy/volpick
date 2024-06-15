@@ -3,16 +3,13 @@
 
 This repository contains the final models and the code to reproduce the model (downloading waveforms, formatting data into seisbench format, training and evaluating deep-learning phase pickers).
 
+## Prerequisites
+[SeisBench](https://github.com/seisbench/seisbench) is necessary for using the models.
 
+## Model Usage
+If you are only interested in applying the model, please see folder `Final_models`, and you can ignore other folders.
 
-# 1 Model Usage
-If you only care about how to use the model, please see folder `Final_models`, and you can ignore the python script files in other folders. See `Final_models/demo.ipynb` for a simple example.
-
-**(1) Prerequisites**
-
-- [SeisBench](https://github.com/seisbench/seisbench) is required to load and run the models.
-
-**(2) Models**
+**(1) Models**
 ```
 Final_models
 ├── demo.ipynb            # a demo
@@ -22,9 +19,10 @@ Final_models
 
 Here the models in the `volpick` folder is the models presented in our paper. We also provide alternative models in folder `volpick_95train_5val`. They were trained by incorporating the test set into the training set. Since we had tested the models, it might be helpful to use the testing waveforms (including those along the Nankai trough and the Cascadia subduction zone) for training. It is risky to use the models in `volpick_95train_5val` because the test set has been "burned". However, we expect that the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset tends to give a more robust model. If you are not sure which one to use, we recommend using `volpick`.
 
-~~To load the models in SeisBench, you need to copy them to the model directory of SeisBench.~~  The model weights have been uploaded to the SeisBench repository and can be used through `from_pretrained('volpick')` or `from_pretrained('volpick_95train')` directly.
+~~To load the models in SeisBench, you need to copy them to the model directory of SeisBench.~~  
+The model weights of `volpick` have been uploaded to the SeisBench repository and can be accessed through `from_pretrained('volpick')` directly.  `Final_models/demo.ipynb` shows a minimal example. Check the [SeisBench document](https://seisbench.readthedocs.io/en/stable/) for more details about SeisBench model API.
 
-**(3) Example snippet**
+**(2) Example snippet**
 
 The following code shows how to load the model in seisbench:
 ```python
@@ -81,8 +79,8 @@ pick_df.to_csv("picks.csv",index=False)
 
 
 
-# 2 Python scripts
->Note: If you just want to use the final model, you don't have to look at these python scripts. Please see the *Model Usage* section.
+## Python scripts
+>Note: If you just need to apply the final model, you can ignore these scripts. Please see the *Model Usage* section.
 
 The scripts and notebooks represent the workflow we used to process data, train and evaluate deep-learning phase pickers on volcano seismicity in the paper. The scripts are not designed as a package for general purposes, so there are inevitably some quick and dirty code implementations. 
 
