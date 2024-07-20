@@ -20,7 +20,7 @@ Final_models
 └── volpick_95train_5val  # models trained on the data splits of 94.5% (training), 5.5% (validation), 0% (testing), with the above test set included into the training set
 ```
 
-Here the models in the `volpick` folder is the models presented in our paper. We also provide alternative models in folder `volpick_95train_5val`. They were trained by incorporating the test set into the training set. Since we had tested the models, it might be helpful to use the testing waveforms (including those along the Nankai trough and the Cascadia subduction zone) for training. It is risky to use the models in `volpick_95train_5val` because the test set has been "burned". However, we expect that the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset tends to give a more robust model. If you are not sure which one to use, we recommend using `volpick`.
+Here the `volpick` folder contains the models presented in our paper. We also provide alternative models in folder `volpick_95train_5val`. They were trained by incorporating the test set into the training set. Since we had tested the models, it might be helpful to use the testing waveforms (including those along the Nankai trough and the Cascadia subduction zone) for training. It is risky to use the models in `volpick_95train_5val` because the test set has been "burned". However, we expect that the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset tends to give a more robust model. If you are not sure which one to use, we recommend using `volpick`.
 
 
 **(2) Example snippet**
@@ -77,7 +77,31 @@ pick_df.to_csv("picks.csv",index=False)
 
 
 
+# Dataset
 
+For those who are interested in benchmarking their methods on  volcanic seismic waveforms, we provide the `VCSEIS` benchmark dataset, which contains local earthquakes from volcanic regions cataloged by Alaska Volcano Observatory, Hawaiian volcano observatory, Northern California Earthquake Data Center, Pacific Northwest Seismic Network, and compiled into SeisBench format by Zhong and Tan (2024). This dataset is a subset of the dataset in Zhong and Tan (2024), with the data from Japan excluded.
+
+The data set can be loaded as `dataset = sbd.VCSEIS()`. Data from different regions can be selected using the the `get_[region]_subset()` function.
+
+```python
+import seisbench.data as sbd
+
+dataset = sbd.VCSEIS()
+
+alaska = dataset.get_alaska_subset()  # select the data from Alaska
+
+hawaii = dataset.get_hawaii_subset()  # select the data from Hawaii
+
+nca = dataset.get_northern_california_subset() # select the data from Northern California
+
+cascade = dataset.get_cascade_subset()  # select the data from Cascade
+
+lp_eq = dataset.get_long_period_earthquakes() # select long-period earthquakes
+
+regular_eq = dataset.get_regular_earthquakes() # select regular/vt earthquakes
+
+noise = dataset.get_noise_traces() # select noise traces
+```
 
 
 ## Python scripts
