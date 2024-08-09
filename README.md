@@ -13,6 +13,7 @@ If you are only interested in applying the model, please see folder `Final_model
 The model weights have been uploaded to the SeisBench repository and can be accessed through `from_pretrained('volpick')` directly.  `Final_models/demo.ipynb` shows a minimal example. Check the [SeisBench document](https://seisbench.readthedocs.io/en/stable/) for more details about SeisBench model API.
 
 **(1) Models**
+
 ```
 Final_models
 ├── demo.ipynb            # a demo
@@ -20,7 +21,9 @@ Final_models
 └── volpick_95train_5val  # models trained on the data splits of 94.5% (training), 5.5% (validation), 0% (testing), with the above test set included into the training set
 ```
 
-Here the `volpick` folder contains the models presented in our paper. We also provide alternative models in folder `volpick_95train_5val`. They were trained by incorporating the test set into the training set. Since we had tested the models, it might be helpful to use the testing waveforms (including those along the Nankai trough and the Cascadia subduction zone) for training. It is risky to use the models in `volpick_95train_5val` because the test set has been "burned". However, we expect that the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, based on the assumption that a larger dataset tends to give a more robust model. If you are not sure which one to use, we recommend using `volpick`.
+Here the `volpick` folder contains the models presented in our paper. 
+
+> We also provide alternative models in folder `volpick_95train_5val`, which were trained by further incorporating the test set into the training set but keeping the validation set. Since we had trained and tested the models in `volpick` using a standard workflow with train/validation/test data splitting, it might be helpful to make full use of the testing waveforms (including the test examples of LFEs along the Nankai trough and LPs along the Cascadia subduction zone in the paper). We hope the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, assuming that a larger dataset tends to give a more robust model. On the other hand, it might be risky to use the models in the `volpick_95train_5val` because the test set has been "burned". If you are not sure which one to use, we recommend using `volpick`.
 
 
 **(2) Example snippet**
