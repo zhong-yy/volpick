@@ -4,7 +4,7 @@
 This repository contains the final models and the code to reproduce the model (downloading waveforms, formatting data into seisbench format, training and evaluating deep-learning phase pickers).
 
 ## Prerequisites
-[SeisBench](https://github.com/seisbench/seisbench) is necessary for using the models.
+[SeisBench](https://github.com/seisbench/seisbench) is necessary for using our models.
 
 ## Model Usage
 If you are only interested in applying the model, please see folder `Final_models`, and you can ignore other folders.
@@ -108,7 +108,7 @@ noise = dataset.get_noise_traces() # select noise traces
 
 
 ## Python scripts
->Note: If you just need to apply the final model, you can ignore these scripts. Please see the *Model Usage* section.
+>Note: If you just need to use the final model, you can ignore these scripts. Please see the *Model Usage* section.
 
 The scripts and notebooks represent the workflow we used to process data, train and evaluate deep-learning phase pickers on volcano seismicity in the paper. The scripts are not designed as a package for general purposes, so there are inevitably some quick and dirty code implementations. 
 
@@ -131,8 +131,12 @@ format
 
 `model_training`: notebooks and scripts that invoke scripts from the volpick folder to train and evaluate models.
 
-# Reference
-Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcano‐tectonic and long‐period earthquakes. Geophysical Research Letters, 51, e2024GL108438. https://doi.org/10.1029/2024GL108438
+# References
+If you use our models, please cite the following paper:
+- Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcano‐tectonic and long‐period earthquakes. Geophysical Research Letters, 51, e2024GL108438. https://doi.org/10.1029/2024GL108438
+
+# Projects using volpick
+- Wei, J., Liu, Q., Chen, L., Wei, S., & Zhao, L. (2024). A novel 3-D seismic scattering and intrinsic attenuation tomography and its application to Northern Sumatra. Journal of Geophysical Research: Solid Earth, 129, e2024JB029116. https://doi.org/10.1029/2024JB029116
 
 # Acknowledgement
 Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
