@@ -132,8 +132,7 @@ format
 `model_training`: notebooks and scripts that invoke scripts from the volpick folder to train and evaluate models.
 
 ## Reference
-Plase cite the following paper if you use our models:
-- Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcano‐tectonic and long‐period earthquakes. Geophysical Research Letters, 51, e2024GL108438. https://doi.org/10.1029/2024GL108438
+Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcano‐tectonic and long‐period earthquakes. Geophysical Research Letters, 51, e2024GL108438. https://doi.org/10.1029/2024GL108438
 
 ## Projects using volpick
 - Wei, J., Liu, Q., Chen, L., Wei, S., & Zhao, L. (2024). A novel 3-D seismic scattering and intrinsic attenuation tomography and its application to Northern Sumatra. Journal of Geophysical Research: Solid Earth, 129, e2024JB029116. https://doi.org/10.1029/2024JB029116
