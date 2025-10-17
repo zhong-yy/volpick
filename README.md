@@ -141,3 +141,4 @@ Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcan
 ## Acknowledgement
 Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
 
+**We are looking for more LP data with analyst picks to improve our model. We would greatly appreciate it if you have the data and are willing to contribute.**
