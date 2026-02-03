@@ -140,6 +140,7 @@ Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcan
 - Wei, J., Liu, Q., Chen, L., Wei, S., & Zhao, L. (2024). A novel 3-D seismic scattering and intrinsic attenuation tomography and its application to Northern Sumatra. Journal of Geophysical Research: Solid Earth, 129, e2024JB029116. https://doi.org/10.1029/2024JB029116
 - Fountoulakis, I., & Evangelidis, C. P. (2025). The 2024–2025 seismic sequence in the Santorini-Amorgos region: Insights into volcano-tectonic activity through high-resolution seismic monitoring. Seismica, 4(1).
 - Gao, A. F., Wilding, J. D., Biondi, E., Bouman, K. L., & Ross, Z. E. (2025). High-resolution eikonal imaging and uncertainty quantification of the Kilauea caldera. arXiv preprint arXiv:2507.23692.
+- Song, Z., Bell, A. F., LaFemina, P. C., Butcher, S., Ruiz, M., Hernández, S., ... & Tan, Y. J. (2026). Long-period microseismicity reveals cryptic earthquake-triggered fluid activity can facilitate caldera eruptions. Nature Communications.
 
 ## Acknowledgement
 Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
