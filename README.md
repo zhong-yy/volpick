@@ -9,7 +9,6 @@ This repository contains the final models and the code to reproduce the model (d
 ## Model Usage
 If you are only interested in applying the model, please see folder `Final_models`, and you can ignore other folders.
 
-~~To load the models in SeisBench, you need to copy them to the model directory of SeisBench.~~  
 The model weights have been uploaded to the SeisBench repository and can be accessed through `from_pretrained('volpick')` directly.  `Final_models/demo.ipynb` shows a minimal example. Check the [SeisBench document](https://seisbench.readthedocs.io/en/stable/) for more details about SeisBench model API.
 
 **(1) Models**
@@ -23,8 +22,11 @@ Final_models
 
 Here the `volpick` folder contains the models presented in our paper. 
 
-We provide alternative models in folder `volpick_95train_5val`, which were trained by incorporating the test set into the training set but keeping the validation set. Since we had trained and tested `volpick` with a standard train/validation/test data splitting, it might be helpful to make full use of the testing waveforms (including the test examples of LFEs along the Nankai trough and LPs along the Cascadia subduction zone in the paper). We assume the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, assuming that a larger dataset tends to give a more robust model. It might be risky to use the models in the `volpick_95train_5val` because the test set has been "burned". If you are not sure which one to use, we recommend using `volpick`. **Note that the data from western US and Nankai trough were only used to test `volpick` but were not in the training (refer to the paper for details), while volpick_95train_5val included 95% of data from western US and LFEs along Nankai trough for training.** 
+We provide alternative models in folder `volpick_95train_5val`, which were trained by incorporating the test set into the training set but keeping the validation set. Since we had trained and tested `volpick` with a standard train/validation/test data splitting, it might be helpful to make full use of the testing waveforms (including the test examples of LFEs along the Nankai trough and LPs along the Cascadia subduction zone in the paper). We assume the performances of the models in `volpick_95train_5val` are not worse than the models in `volpick`, assuming that a larger dataset tends to give a more robust model. On the other hand, it might be risky to use the models in the `volpick_95train_5val` because the test set has been "burned". If you are not sure which one to use, we recommend using `volpick`. **Note that the data from western US and Nankai trough were only used to test `volpick` but were not in the training (refer to the paper for details), while volpick_95train_5val included 95% of data from western US and LFEs along Nankai trough for training.**
 
+> `volpick` is already in the SeisBench repository, it will be downloaded when you run `sbm.[model].from_pretrained("volpick")` (`[model]` should be EQTransformer or PhaseNet)
+> 
+> `volpick_95train_5val` is not in the SeisBench repository, if you want to try it, you need to copy the .json and .pt files to the model directory of SeisBench.
 
 
 
