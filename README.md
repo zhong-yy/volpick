@@ -9,7 +9,9 @@ This repository contains the final models and the code to reproduce the model (d
 ## Model Usage
 If you are only interested in applying the model, please see folder `Final_models`, and you can ignore other folders.
 
-The model weights have been uploaded to the SeisBench repository and can be accessed through `from_pretrained('volpick')` directly.  `Final_models/demo.ipynb` shows a minimal example. Check the [SeisBench document](https://seisbench.readthedocs.io/en/stable/) for more details about SeisBench model API.
+The model weights have been uploaded to the SeisBench repository and can be accessed through `from_pretrained('volpick')` directly. If the model files `volpick.json.v1` and `volpick.pt.v1` are not in the local seisbench cache directory, they will be downloaded when loaded for the first time. Alternatively, you can directly copy files volpick.json.v1 and volpick.pt.v1 from to the model folder (check the model directory with `print(seisbench.cache_model_root)` in python).  `Final_models/demo.ipynb` shows a minimal example. 
+
+Please refer to the [SeisBench document](https://seisbench.readthedocs.io/en/stable/) for more details about SeisBench model API.
 
 **(1) Models**
 
