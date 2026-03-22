@@ -145,6 +145,7 @@ Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcan
 - Fountoulakis, I., & Evangelidis, C. P. (2025). The 2024–2025 seismic sequence in the Santorini-Amorgos region: Insights into volcano-tectonic activity through high-resolution seismic monitoring. Seismica, 4(1).
 - Gao, A. F., Wilding, J. D., Biondi, E., Bouman, K. L., & Ross, Z. E. (2025). High-resolution eikonal imaging and uncertainty quantification of the Kilauea caldera. arXiv preprint arXiv:2507.23692.
 - Song, Z., Bell, A. F., LaFemina, P. C., Butcher, S., Ruiz, M., Hernández, S., ... & Tan, Y. J. (2026). Long-period microseismicity reveals cryptic earthquake-triggered fluid activity can facilitate caldera eruptions. Nature Communications.
+- Murray-Bergquist, L., Thorwart, M., García, A., Ulloa, C., Van Ginkel, J., Van Huisstede, L. I., & Beniest, A. (2026). Ojos del Salado: how active is this sleeping giant?. Geophysical Journal International, ggag108.
 
 ## Acknowledgement
 Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
