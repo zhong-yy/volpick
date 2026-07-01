@@ -84,8 +84,6 @@ pick_df = picklist2df(picks)
 pick_df.to_csv("picks.csv",index=False)
 ```
 
-
-
 # Dataset
 
 For those who are interested in benchmarking their methods on  volcanic seismic waveforms, we provide the `VCSEIS` benchmark dataset, which contains local earthquakes from volcanic regions cataloged by Alaska Volcano Observatory, Hawaiian volcano observatory, Northern California Earthquake Data Center, Pacific Northwest Seismic Network, and compiled into SeisBench format by Zhong and Tan (2024). This dataset is a subset of the dataset in Zhong and Tan (2024), with the data from Japan excluded.
@@ -112,7 +110,6 @@ regular_eq = dataset.get_regular_earthquakes() # select regular/vt earthquakes
 noise = dataset.get_noise_traces() # select noise traces
 ```
 
-
 ## Python scripts
 >Note: If you just need to use the final model, you can ignore these scripts. Please see the *Model Usage* section.
 
@@ -137,8 +134,12 @@ format
 
 `model_training`: notebooks and scripts that invoke scripts from the volpick folder to train and evaluate models.
 
+## Acknowledgement
+Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
+
 ## Reference
 Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcano‐tectonic and long‐period earthquakes. Geophysical Research Letters, 51, e2024GL108438. https://doi.org/10.1029/2024GL108438
+
 
 ## Projects using volpick
 - Wei, J., Liu, Q., Chen, L., Wei, S., & Zhao, L. (2024). A novel 3-D seismic scattering and intrinsic attenuation tomography and its application to Northern Sumatra. Journal of Geophysical Research: Solid Earth, 129, e2024JB029116. https://doi.org/10.1029/2024JB029116
@@ -146,8 +147,6 @@ Zhong, Y., & Tan, Y. J. (2024). Deep‐learning‐based phase picking for volcan
 - Gao, A. F., Wilding, J. D., Biondi, E., Bouman, K. L., & Ross, Z. E. (2025). High-resolution eikonal imaging and uncertainty quantification of the Kilauea caldera. arXiv preprint arXiv:2507.23692.
 - Song, Z., Bell, A. F., LaFemina, P. C., Butcher, S., Ruiz, M., Hernández, S., ... & Tan, Y. J. (2026). Long-period microseismicity reveals cryptic earthquake-triggered fluid activity can facilitate caldera eruptions. Nature Communications.
 - Murray-Bergquist, L., Thorwart, M., García, A., Ulloa, C., Van Ginkel, J., Van Huisstede, L. I., & Beniest, A. (2026). Ojos del Salado: how active is this sleeping giant?. Geophysical Journal International, ggag108.
+- Carducci, A., Cocina, O., Sciotto, M., Cannata, A., Di Gioia, S., Vuan, A., ... & Sugan, M. (2026). Insights into a Deep Learning Workflow for Automatic Detection of Seismic Signals at Mount Etna Volcano. Seismological Research Letters.
+- Lu, W., Shapiro, N. M., & Münchmeyer, J. (2026). Magma pathways beneath the Klyuchevskoy volcanic group, Kamchatka, revealed by a machine-learning-based earthquake catalog. Geophysical Research Letters, 53, e2026GL123629.
 
-## Acknowledgement
-Part of the training and evaluation code is adapted from [pick-benchmark](https://github.com/seisbench/pick-benchmark).
-
-**We are looking for more LP data with analyst picks to improve our model. We would greatly appreciate it if you have the data and are willing to contribute.**
